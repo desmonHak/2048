@@ -30,6 +30,18 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     private var startY = 0f
     private val swipeThreshold = 100
 
+
+    ///variables pra puntuazzione
+
+    private var score = 0
+
+    private val scorePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLUE
+        textSize = 55f
+        typeface = Typeface.DEFAULT_BOLD
+    }
+
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -150,24 +162,44 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
 
     // ---------- FUNCIONES DE MOVIMIENTO ----------
     private fun moveBoard(newBoard: Array<IntArray>) {
-        var moved = false
+        try {
+            var moved = false
 
-        for (r in 0 until boardSize) {
-            if (!board[r].contentEquals(newBoard[r])) moved = true
-        }
+            for (r in 0 until boardSize) {
+                if (!board[r].contentEquals(newBoard[r])) moved = true
+            }
 
-        for (r in 0 until boardSize) board[r] = newBoard[r].copyOf()
+            for (r in 0 until boardSize) board[r] = newBoard[r].copyOf()
 
-        if (moved) {
-            addRandomTile()
-            invalidate()
+            if (moved) {
+                addRandomTile()
+                invalidate()
 
-            if (checkWin()) {
+                if (checkWin()) {
                     Toast.makeText(context, "¡Has ganado piruleta!", Toast.LENGTH_LONG).show()
                     Log.i("Estado", "Victoria !")
-            } else if (checkLose()) {
-                Log.i("Estado", "Derrota!")
-                    Toast.makeText(context, "¡Has perdido", Toast.LENGTH_LONG).show()
+                } else if (checkLose()) {
+                    Toast.makeText(context, "Has perdid calamar", Toast.LENGTH_LONG).show()
+                    Log.i("Estado", "Derrotadillo como un cocodrilo!")
+                }
+            }
+
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            Log.e("ErrorGameView", "Error en moveBoard", e)
+        }
+
+        for (row in 0 until boardSize) {
+            for (col in 0 until boardSize - 1) {
+                if (board[row][col] == board[row][col + 1] && board[row][col] != 0) {
+                    board[row][col] *= 2
+                    board[row][col + 1] = 0
+
+                    //  Sumar puntuación
+                    score += board[row][col]
+                    Log.i("Puntuacion", "${score}");
+                    //  Actualizar el TextView
+                    //(context as? MainActivity)?.updateScoreDisplay(score)
                 }
             }
         }
@@ -255,4 +287,125 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
         for (r in 0 until boardSize) for (c in 0 until boardSize) board[r][c] = newBoard[r][c]
         invalidate()
     }
+
+    class GameView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
+
+        private val boardSize = 6
+        private val board = Array(boardSize) { IntArray(boardSize) }
+
+        private val tilePaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign = Paint.Align.CENTER; textSize = 80f }
+        private val emptyTilePaint = Paint().apply { color = Color.LTGRAY }
+        private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK; textAlign = Paint.Align.CENTER; textSize = 70f
+        }
+
+        class GameView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
+
+            // ---------------------
+            // CONTADOR + GATO
+            // ---------------------
+            private var moveCounter = 0
+
+            private val counterPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.BLACK
+                textSize = 55f
+                typeface = Typeface.DEFAULT_BOLD
+            }
+
+            private var startX = 0f
+            private var startY = 0f
+            private val swipeThreshold = 100
+
+
+            // ---------------------
+            //  BARRA DE TIEMPO
+            // ---------------------
+            private val maxTime = 10000L   // 10 segundos
+            private var timeLeft = maxTime
+
+            private val timeBarPaint = Paint().apply { color = Color.RED }
+            private val timeBarBackgroundPaint = Paint().apply { color = Color.LTGRAY }
+
+            private var lastUpdateTime = System.currentTimeMillis()
+
+
+            // ---------------------
+            // TOUCH
+            // ---------------------
+            override fun onTouchEvent(event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        startX = event.x
+                        startY = event.y
+                        return true
+                    }
+
+                    MotionEvent.ACTION_UP -> {
+                        val dx = event.x - startX
+                        val dy = event.y - startY
+
+                        if (Math.abs(dx) > Math.abs(dy)) {
+                            if (dx > swipeThreshold) swipeRight()
+                            else if (dx < -swipeThreshold) swipeLeft()
+                        } else {
+                            if (dy > swipeThreshold) swipeDown()
+                            else if (dy < -swipeThreshold) swipeUp()
+                        }
+                    }
+                }
+                return super.onTouchEvent(event)
+            }
+
+
+            // ---------------------
+            // SWIPES
+            // ---------------------
+            private fun swipeUp() {
+                moveCounter++
+                resetTimer()
+            }
+
+            private fun swipeDown() {
+                moveCounter++
+                resetTimer()
+            }
+
+            private fun swipeLeft() {
+                moveCounter++
+                resetTimer()
+            }
+
+            private fun swipeRight() {
+                moveCounter++
+                resetTimer()
+            }
+
+
+            // ---------------------
+            // TIMER
+            // ---------------------
+            private fun updateTimer() {
+                val now = System.currentTimeMillis()
+                val delta = now - lastUpdateTime
+                lastUpdateTime = now
+
+                timeLeft -= delta
+                if (timeLeft < 0) timeLeft = 0
+
+                invalidate()
+            }
+
+            private fun resetTimer() {
+                timeLeft = maxTime
+                lastUpdateTime = System.currentTimeMillis()
+            }
+
+
+
+        }
+
+
+    }
 }
+

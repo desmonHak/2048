@@ -33,8 +33,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var paint: Paint
 
 
-
     @SuppressLint("ClickableViewAccessibility")
+    private lateinit var progressBar: ProgressBar
+    private val totalTime = 10_000L // 10 segundos
+    private val interval = 100L     // Actualiza cada 100 ms
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -67,7 +72,58 @@ class MainActivity : AppCompatActivity() {
 
         gameView.setBoard(board)
 
+        progressBar = findViewById(R.id.progressBar)
+
+        val progressShape = ShapeDrawable(RectShape()).apply {
+            intrinsicHeight = 40   // grosor real de la barra
+        }
+        val progressClip = ClipDrawable(progressShape, Gravity.LEFT, ClipDrawable.HORIZONTAL)
+        val background = ShapeDrawable(RectShape()).apply {
+            intrinsicHeight = 40
+            paint.color = Color.LTGRAY
+        }
+        val layers = arrayOf<Drawable>(background, progressClip)
+        val layerDrawable = LayerDrawable(layers).apply {
+            setId(0, android.R.id.background)
+            setId(1, android.R.id.progress)
+        }
+
+        val timer = object : CountDownTimer(totalTime, interval) {
+            override fun onTick(millisUntilFinished: Long) {
+                val progress = ((totalTime - millisUntilFinished) * 900000 / totalTime).toInt()
+                progressBar.progress = progress
+            }
+
+            override fun onFinish() {
+                progressBar.progress = 100
+                Toast.makeText(this@MainActivity, "¡Tu Tiempo Perruno Terminó!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        timer.start()
+
     }
 
+    class MainActivity : AppCompatActivity() {
 
+        lateinit var scoreText: TextView
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+
+            //scoreText = findViewById(R.id.scoreText)
+        }
+
+        fun updateScoreDisplay(score: Int) {
+            scoreText.text = "Score: $score"
+        }
+    }
 }
+
+
+
+
+
+
+
