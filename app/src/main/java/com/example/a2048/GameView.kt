@@ -1,13 +1,17 @@
 package com.example.a2048
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import kotlin.random.Random
 
 class GameView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
@@ -19,7 +23,7 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     // Pinturas para dibujar tiles y texto
     private val tilePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign = Paint.Align.CENTER; textSize = 80f }
     private val emptyTilePaint = Paint().apply { color = Color.LTGRAY }
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textAlign = Paint.Align.CENTER; textSize = 100f }
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textAlign = Paint.Align.CENTER; textSize = 70f }
 
     // ---------- GESTOS ----------
     private var startX = 0f
@@ -85,17 +89,17 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
 
     // ---------- COLORES DE CADA TILE ----------
     private fun tileColor(value: Int) = when (value) {
-        2 -> Color.rgb(238, 228, 218)
-        4 -> Color.rgb(237, 224, 200)
-        8 -> Color.rgb(242, 177, 121)
-        16 -> Color.rgb(245, 149, 99)
-        32 -> Color.rgb(246, 124, 95)
-        64 -> Color.rgb(246, 94, 59)
-        128 -> Color.rgb(237, 207, 114)
-        256 -> Color.rgb(237, 204, 97)
-        512 -> Color.rgb(237, 200, 80)
-        1024 -> Color.rgb(237, 197, 63)
-        2048 -> Color.rgb(237, 194, 46)
+        2 -> Color.rgb(253, 185, 223)
+        4 -> Color.rgb(252, 141, 202)
+        8 -> Color.rgb(251, 100, 182)
+        16 -> Color.rgb(250, 51, 160)
+        32 -> Color.rgb(230, 24, 118)
+        64 -> Color.rgb(216, 249, 153)
+        128 -> Color.rgb(154, 230, 48)
+        256 -> Color.rgb(178, 243, 57)
+        512 -> Color.rgb(162, 241, 14)
+        1024 -> Color.rgb(98, 79, 222)
+        2048 -> Color.rgb(133, 118, 229)
         else -> Color.GRAY
     }
 
@@ -157,15 +161,19 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
         if (moved) {
             addRandomTile()
             invalidate()
+
             if (checkWin()) {
-                Log.i("Estado", "Victoria!")
-                // TODO: mostrar mensaje de victoria
+                    Toast.makeText(context, "¡Has ganado piruleta!", Toast.LENGTH_LONG).show()
+                    Log.i("Estado", "Victoria !")
             } else if (checkLose()) {
                 Log.i("Estado", "Derrota!")
-                // TODO: mostrar mensaje de derrota
+                    Toast.makeText(context, "¡Has perdido", Toast.LENGTH_LONG).show()
+                }
             }
         }
+
     }
+
 
     fun swipeLeft() {
         val newBoard = Array(boardSize) { IntArray(boardSize) }
@@ -241,7 +249,8 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
         moveBoard(newBoard)
     }
 
-    // ---------- OPCIONAL: Establecer tablero desde Activity ----------
+
+    // ----------  Establecer tablero desde Activity ----------
     fun setBoard(newBoard: Array<IntArray>) {
         for (r in 0 until boardSize) for (c in 0 until boardSize) board[r][c] = newBoard[r][c]
         invalidate()
