@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme._2048">
         <activity
-            android:name=".MainActivity"
+            android:name=".Views.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,6 +20,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".Views.SettingGameView"
+            android:exported="false" />
+
+        <activity
+            android:name=".Views.ScoresActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
