@@ -19,6 +19,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.a2048.Models.Score
 import com.example.a2048.R
 import com.example.a2048.Utils.DB_Score
+import com.example.a2048.Utils.Difficulty
 import com.example.a2048.Views.SettingGameView
 
 class MainActivity : AppCompatActivity() {
@@ -34,7 +35,29 @@ class MainActivity : AppCompatActivity() {
     private var timer: CountDownTimer? = null
 
     private var difficulty: Float = 0.0F
-    private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private val settingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.let { data ->
+                // Recibir datos de Settings
+                totalMillis = (data.getStringExtra("DURACION_JUEGO") ?: "600000").toLong()
+
+                val difStr = data.getStringExtra("DIFICULTAD") ?: Difficulty.NORMAL.name
+                val selectedDifficulty = try {
+                    Difficulty.valueOf(difStr) // convierte "EASY"/"NORMAL"/"HARD" en enum
+                } catch (e: IllegalArgumentException) {
+                    Difficulty.NORMAL
+                }
+
+                gameView.dificultad = selectedDifficulty
+                startTimer()  // Reiniciar timer
+                gameView.resetGame()  // Aplicar dificultad
+            }
+        }
+    }
+
+    /*private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.let { data ->
                 // Recibir datos de Settings
@@ -45,7 +68,9 @@ class MainActivity : AppCompatActivity() {
                 gameView.resetGame()  // Aplicar dificultad
             }
         }
-    }
+    }*/
+
+
 
     private fun startTimer() {
         timer?.cancel()
@@ -170,14 +195,15 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, SettingGameView::class.java).apply {
                 // Pasar valores actuales de GameView
                 putExtra("DURACION_ACTUAL", totalMillis.toString())
-                putExtra("DIFICULTAD_ACTUAL", gameView.difficulty.toString())
+                putExtra("DIFICULTAD_ACTUAL", gameView.dificultad.name/*difficulty.toString()*/)
                 putExtra("TIMESLEEP_ACTUAL", timeSleep.toString())
                 putExtra("PUNTUACION_ACTUAL", gameView.score) // Asumiendo que GameView tiene 'score'
             }
             settingsLauncher.launch(intent) // O startActivity(intent)
         }
 
-        gameView.setBoard(board)
+        gameView.resetGame()
+        //gameView.setBoard(board)
         startTimer();
 
     }

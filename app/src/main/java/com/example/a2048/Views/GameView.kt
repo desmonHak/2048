@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
+import com.example.a2048.Utils.Difficulty
 import kotlin.properties.Delegates
 import kotlin.random.Random
 
@@ -58,7 +59,8 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
      *
      * @see addRandomTile
      */
-    var difficulty: Float = 0.5f // Valor por defecto medio
+    var dificultad: Difficulty = Difficulty.NORMAL // Valor por defecto medio
+    /*var difficulty: Float = 0.5f // Valor por defecto medio
         /**
          * Setter que limita el valor entre 0.0f y 1.0f.
          *
@@ -66,7 +68,7 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
          */
         set(value) {
             field = value.coerceIn(0.0f, 1.0f) // Limitar entre 0 y 1
-        }
+        }*/
 
     // ---------- GESTOS ----------
     private var startX = 0f
@@ -146,6 +148,14 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
         }
     }
 
+    //función para la dificultad
+    fun spawnTile() {
+        var dificultad: Difficulty = Difficulty.NORMAL // Valor por defecto medio
+        val prob = Math.random()
+        val value = if (prob < dificultad.probabilidad) 4 else 2
+        // coloca la ficha en una celda vacía
+    }
+
     private fun tileColor(value: Int) = when (value) {
         2 -> Color.rgb(253, 185, 223)
         4 -> Color.rgb(252, 141, 202)
@@ -190,6 +200,28 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
      * @see difficulty
      */
     private fun addRandomTile() {
+        val emptyCells = mutableListOf<Pair<Int, Int>>()
+        for (r in 0 until boardSize) {
+            for (c in 0 until boardSize) {
+                if (board[r][c] == 0) emptyCells.add(Pair(r, c))
+            }
+        }
+
+        if (emptyCells.isNotEmpty()) {
+            val (row, col) = emptyCells.random()
+
+            // Usa la dificultad seleccionada
+            val fourProbability = when (dificultad) {
+                Difficulty.EASY -> 0.1f   // 10% de 4
+                Difficulty.NORMAL -> 0.3f // 30% de 4
+                Difficulty.HARD -> 0.5f   // 50% de 4
+            }
+            Log.d("GameView", "Dificultad actual: ${dificultad.name}, probabilidad de 4: $fourProbability")
+            board[row][col] = if (Random.Default.nextDouble() < fourProbability) 4 else 2
+        }
+    }
+
+    /*private fun addRandomTile() {
         // Recopila todas las posiciones vacías del tablero
         val emptyCells = mutableListOf<Pair<Int, Int>>()
         for (r in 0 until boardSize) {
@@ -215,7 +247,7 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
                 board[row][col] = 8
             }
         }
-    }
+    }*/
 
     private fun checkWin() = board.any { row -> row.any { it == 2048 } }
     private fun checkLose(): Boolean {
