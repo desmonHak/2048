@@ -24,13 +24,20 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
 
     var boardSize = 4
         set(value) {
+            field = value
             board = Array(value) { IntArray(value) }
             setBoard(board) // en este momento, boardSize sigue siendo 6, pero value es el
             // nuevo valor, no podemos hacer boardSize = value por que formara un set recursivo
             // creando un bucle
+            invalidate()
         }
-    private var board = Array(boardSize) { IntArray(boardSize) }
 
+    var board = Array(boardSize) { IntArray(boardSize) }
+        get() = field
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     /**
      * onScoreChange almacena el lambda que usara los valores para
@@ -372,6 +379,18 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
         lastUpdateTime = System.currentTimeMillis()
     }
 
+    /**
+     * Al tener un atributo llamado board, y definir el metodo set de la forma tradicional.
+     * El nombre del metodo set generado por kotlin sera setBoard. Al tener nosotros otro
+     * metodo setBoard, en este caso para actualizar el atributo board con otro tablero, debemos
+     * hacer que kotlin genere otro nombre interno para esta funcion, para esto usamos JvmName, lo
+     * cual nos permite definir a nivel de bytecode el nombre de la funcion, en este caso, esta
+     * funcion setBoard al final a nivel de bytecode recibira el nombre de updateBoardJvm.
+     *
+     * Esto es la solucion propuesta al problema "Platform declaration clash":
+     *  - https://stackoverflow.com/questions/59920597/kotlin-platform-declaration-clash
+     */
+    @JvmName("updateBoardJvm")
     fun setBoard(newBoard: Array<IntArray>) {
         val size = newBoard.size  // Usa el tamaño del nuevo board
         for (r in 0 until size) {
