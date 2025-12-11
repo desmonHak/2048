@@ -10,7 +10,7 @@ Juego del 2048 creado en equipo usando kotlin, sqlite y Jetpack Compose.
 - [leyrevelcas](https://github.com/leyrevelcas)
 - [desmonHak](https://github.com/desmonHak)
 
-El juego cuenta con botones de reset, configuracion de partida y registro de partida:
+El juego cuenta con botones de reset, dificultades, configuracion de partida y registro de partida:
 
 ![alt text](./img/image.png)
 

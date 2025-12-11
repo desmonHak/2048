@@ -9,18 +9,28 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
+import com.example.a2048.Utils.Difficulty
 import kotlin.properties.Delegates
 import kotlin.random.Random
 
 class GameView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
 
     // ---------- CONSTANTES ----------
-    private val boardSize = 6
     private val swipeThreshold = 100
-    private val maxTime = 10000L // 10 segundos
+    private var maxTime = 10000L // 10 segundos
+
 
     // ---------- ESTADO DEL JUEGO ----------
-    private val board = Array(boardSize) { IntArray(boardSize) }
+
+    var boardSize = 4
+        set(value) {
+            board = Array(value) { IntArray(value) }
+            setBoard(board) // en este momento, boardSize sigue siendo 6, pero value es el
+            // nuevo valor, no podemos hacer boardSize = value por que formara un set recursivo
+            // creando un bucle
+        }
+    private var board = Array(boardSize) { IntArray(boardSize) }
+
 
     /**
      * onScoreChange almacena el lambda que usara los valores para
@@ -58,7 +68,8 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
      *
      * @see addRandomTile
      */
-    var difficulty: Float = 0.5f // Valor por defecto medio
+    var dificultad: Difficulty = Difficulty.NORMAL // Valor por defecto medio
+    /*var difficulty: Float = 0.5f // Valor por defecto medio
         /**
          * Setter que limita el valor entre 0.0f y 1.0f.
          *
@@ -66,7 +77,7 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
          */
         set(value) {
             field = value.coerceIn(0.0f, 1.0f) // Limitar entre 0 y 1
-        }
+        }*/
 
     // ---------- GESTOS ----------
     private var startX = 0f
@@ -113,10 +124,10 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     }
 
     private fun drawBoard(canvas: Canvas) {
-        val tileSize = width / boardSize
+        val tileSize = width / board.size
 
-        for (r in 0 until boardSize) {
-            for (c in 0 until boardSize) {
+        for (r in 0 until board.size) {
+            for (c in 0 until board.size) {
                 val x = c * tileSize
                 val y = r * tileSize
 
@@ -146,6 +157,14 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
         }
     }
 
+    //función para la dificultad
+    fun spawnTile() {
+        var dificultad: Difficulty = Difficulty.NORMAL // Valor por defecto medio
+        val prob = Math.random()
+        val value = if (prob < dificultad.probabilidad) 4 else 2
+        // coloca la ficha en una celda vacía
+    }
+
     private fun tileColor(value: Int) = when (value) {
         2 -> Color.rgb(253, 185, 223)
         4 -> Color.rgb(252, 141, 202)
@@ -163,7 +182,13 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
 
     // ---------- LÓGICA DEL JUEGO ----------
     fun resetGame() {
-        for (r in 0 until boardSize) for (c in 0 until boardSize) board[r][c] = 0
+        // Primero limpiar el board actual con su tamaño
+        for (r in board.indices) {
+            for (c in board[r].indices) {
+                board[r][c] = 0
+            }
+        }
+
         score = 0
         moveCounter = 0
         timeLeft = maxTime
@@ -190,40 +215,34 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
      * @see difficulty
      */
     private fun addRandomTile() {
-        // Recopila todas las posiciones vacías del tablero
         val emptyCells = mutableListOf<Pair<Int, Int>>()
-        for (r in 0 until boardSize) {
-            for (c in 0 until boardSize) {
+        for (r in 0 until board.size) {
+            for (c in 0 until board.size) {
                 if (board[r][c] == 0) emptyCells.add(Pair(r, c))
             }
         }
 
-        // Solo genera tile si hay celdas vacías
         if (emptyCells.isNotEmpty()) {
-            // Selecciona posición aleatoria entre celdas vacías
             val (row, col) = emptyCells.random()
 
-            // Fórmula: probabilidad de 4 = 10% base + 30% * dificultad
-            // Resultado: 0.1 (fácil) → 0.4 (difícil)
-            val fourProbability = 0.1f + (difficulty * 0.3f)
-
-            // Asigna tile según probabilidad (más 4s = más difícil)
-            board[row][col] = if (Random.Default.nextDouble() < fourProbability) 4 else 2
-
-            // POSIBILIDAD DE 8 EN DIFICULTAD ALTA
-            if (difficulty > 0.7f && Random.Default.nextDouble() < 0.1f) {
-                board[row][col] = 8
+            // Usa la dificultad seleccionada
+            val fourProbability = when (dificultad) {
+                Difficulty.EASY -> 0.1f   // 10% de 4
+                Difficulty.NORMAL -> 0.3f // 30% de 4
+                Difficulty.HARD -> 0.5f   // 50% de 4
             }
+            Log.d("GameView", "Dificultad actual: ${dificultad.name}, probabilidad de 4: $fourProbability")
+            board[row][col] = if (Random.Default.nextDouble() < fourProbability) 4 else 2
         }
     }
 
     private fun checkWin() = board.any { row -> row.any { it == 2048 } }
     private fun checkLose(): Boolean {
         if (board.any { row -> row.any { it == 0 } }) return false
-        for (r in 0 until boardSize) for (c in 0 until boardSize - 1) {
+        for (r in 0 until board.size) for (c in 0 until board.size - 1) {
             if (board[r][c] == board[r][c + 1]) return false
         }
-        for (c in 0 until boardSize) for (r in 0 until boardSize - 1) {
+        for (c in 0 until board.size) for (r in 0 until board.size - 1) {
             if (board[r][c] == board[r + 1][c]) return false
         }
         return true
@@ -232,10 +251,10 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     private fun moveBoard(newBoard: Array<IntArray>) {
         try {
             var moved = false
-            for (r in 0 until boardSize) {
+            for (r in 0 until board.size) {
                 if (!board[r].contentEquals(newBoard[r])) moved = true
             }
-            for (r in 0 until boardSize) board[r] = newBoard[r].copyOf()
+            for (r in 0 until board.size) board[r] = newBoard[r].copyOf()
 
             if (moved) {
                 addRandomTile()
@@ -256,8 +275,8 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     private fun swipeLeft() {
         moveCounter++
         resetTimer()
-        val newBoard = Array(boardSize) { IntArray(boardSize) }
-        for (r in 0 until boardSize) {
+        val newBoard = Array(board.size) { IntArray(board.size) }
+        for (r in 0 until board.size) {
             val line = board[r].filter { it != 0 }.toMutableList()
             var i = 0
             while (i < line.size - 1) {
@@ -268,7 +287,7 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
                 }
                 i++
             }
-            while (line.size < boardSize) line.add(0)
+            while (line.size < board.size) line.add(0)
             newBoard[r] = line.toIntArray()
         }
         moveBoard(newBoard)
@@ -277,8 +296,8 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     private fun swipeRight() {
         moveCounter++
         resetTimer()
-        val newBoard = Array(boardSize) { IntArray(boardSize) }
-        for (r in 0 until boardSize) {
+        val newBoard = Array(board.size) { IntArray(board.size) }
+        for (r in 0 until board.size) {
             val line = board[r].filter { it != 0 }.toMutableList()
             var i = line.size - 1
             while (i > 0) {
@@ -290,7 +309,7 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
                 }
                 i--
             }
-            while (line.size < boardSize) line.add(0, 0)
+            while (line.size < board.size) line.add(0, 0)
             newBoard[r] = line.toIntArray()
         }
         moveBoard(newBoard)
@@ -299,9 +318,9 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     private fun swipeUp() {
         moveCounter++
         resetTimer()
-        val newBoard = Array(boardSize) { IntArray(boardSize) }
-        for (c in 0 until boardSize) {
-            val col = MutableList(boardSize) { board[it][c] }.filter { it != 0 }.toMutableList()
+        val newBoard = Array(board.size) { IntArray(board.size) }
+        for (c in 0 until board.size) {
+            val col = MutableList(board.size) { board[it][c] }.filter { it != 0 }.toMutableList()
             var i = 0
             while (i < col.size - 1) {
                 if (col[i] == col[i + 1]) {
@@ -311,8 +330,8 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
                 }
                 i++
             }
-            while (col.size < boardSize) col.add(0)
-            for (r in 0 until boardSize) newBoard[r][c] = col[r]
+            while (col.size < board.size) col.add(0)
+            for (r in 0 until board.size) newBoard[r][c] = col[r]
         }
         moveBoard(newBoard)
     }
@@ -320,9 +339,9 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     private fun swipeDown() {
         moveCounter++
         resetTimer()
-        val newBoard = Array(boardSize) { IntArray(boardSize) }
-        for (c in 0 until boardSize) {
-            val col = MutableList(boardSize) { board[it][c] }.filter { it != 0 }.toMutableList()
+        val newBoard = Array(board.size) { IntArray(board.size) }
+        for (c in 0 until board.size) {
+            val col = MutableList(board.size) { board[it][c] }.filter { it != 0 }.toMutableList()
             var i = col.size - 1
             while (i > 0) {
                 if (col[i] == col[i - 1]) {
@@ -333,8 +352,8 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
                 }
                 i--
             }
-            while (col.size < boardSize) col.add(0, 0)
-            for (r in 0 until boardSize) newBoard[r][c] = col[r]
+            while (col.size < board.size) col.add(0, 0)
+            for (r in 0 until board.size) newBoard[r][c] = col[r]
         }
         moveBoard(newBoard)
     }
@@ -354,7 +373,12 @@ class GameView(context: Context, attrs: AttributeSet? = null) : View(context, at
     }
 
     fun setBoard(newBoard: Array<IntArray>) {
-        for (r in 0 until boardSize) for (c in 0 until boardSize) board[r][c] = newBoard[r][c]
+        val size = newBoard.size  // Usa el tamaño del nuevo board
+        for (r in 0 until size) {
+            for (c in 0 until size) {
+                board[r][c] = newBoard[r][c]
+            }
+        }
         invalidate()
     }
 }
