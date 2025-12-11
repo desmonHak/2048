@@ -22,14 +22,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Volver" />
+            android:text="@string/volver" />
 
         <Button
             android:id="@+id/guadarButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Guardar" />
+            android:text="@string/guardar" />
     </LinearLayout>
 
     <ScrollView
@@ -64,7 +64,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="duracion del juego"
+                    android:text="@string/duracion_del_juego"
                     android:textAlignment="textEnd" />
 
             </LinearLayout>
@@ -72,30 +72,23 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <EditText
-                    android:id="@+id/editTextDificultad"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ems="10"
-                    android:inputType="text" />
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp">
 
                 <TextView
                     android:id="@+id/textViewDificultad"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="dificultad"
-                    android:textAlignment="textEnd" />
+                    android:textSize="22sp"
+                    android:text="@string/dificultad"
+                    android:textAlignment="center" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="406dp"
                 android:layout_height="49dp"
-                android:layout_marginTop="36dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -107,21 +100,44 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Fácil" />
+                    android:text="@string/f_cil" />
 
                 <Button
                     android:id="@+id/normal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Normal" />
+                    android:text="@string/normal" />
 
                 <Button
                     android:id="@+id/hard"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Difícil" />
+                    android:text="@string/dif_cil" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/editTextSizeBoard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="text" />
+
+                <TextView
+                    android:id="@+id/textViewSizeBoard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/tama_o_del_tablero"
+                    android:textAlignment="textEnd" />
+
             </LinearLayout>
 
         </LinearLayout>

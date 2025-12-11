@@ -10,65 +10,80 @@ import com.example.a2048.Utils.Difficulty
 
 class SettingGameView : AppCompatActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    lateinit var durationEdit: EditText
+    lateinit var editTextSizeBoard: EditText
 
+    var dificultad: Difficulty = Difficulty.NORMAL
+
+    fun add_conf_to_intent(intent: Intent): Intent {
+        return intent.apply {
+            putExtra("DIFICULTAD", dificultad.name)
+
+            // Validar duración: mínimo 4 dígitos y > 0
+            val durationText = durationEdit.text.toString()
+            if (durationText.length >= 4 && durationText.toIntOrNull() != null && durationText.toInt() > 0) {
+                putExtra("DURACION_JUEGO", durationText)
+            }
+
+            // Validar tamaño tablero: número válido > 0
+            val sizeText = editTextSizeBoard.text.toString()
+            val size = sizeText.toIntOrNull()
+            if (size != null && size > 0) {
+                putExtra("SIZE_BOARD_ACTUAL", size.toString())
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        val btnEasy = findViewById<Button>(R.id.easy)
-        val btnNormal = findViewById<Button>(R.id.normal)
-        val btnHard = findViewById<Button>(R.id.hard)
+        // Inicializar vistas
+        durationEdit = findViewById(R.id.editTextDurationTime)
+        editTextSizeBoard = findViewById(R.id.editTextSizeBoard)
 
-
-
-        // Mostrar valores actuales recibidos de MainActivity
-        val durationEdit = findViewById<EditText>(R.id.editTextDurationTime)
-        //val difficultyEdit = findViewById<EditText>(R.id.editTextDificultad)
-
-        btnEasy.setOnClickListener {
-            val resultIntent = Intent().apply {
-                putExtra("DIFICULTAD", Difficulty.EASY.name)
-                putExtra("DURACION_JUEGO", intent.getStringExtra("DURACION_ACTUAL") ?: Difficulty.NORMAL.name/*"600000"*/)
-            }
-            setResult(RESULT_OK, resultIntent)
-            finish()
-        }
-
-        btnNormal.setOnClickListener {
-            val resultIntent = Intent().apply {
-                putExtra("DIFICULTAD", Difficulty.NORMAL.name)
-                putExtra("DURACION_JUEGO", intent.getStringExtra("DURACION_ACTUAL") ?: "600000")
-            }
-            setResult(RESULT_OK, resultIntent)
-            finish()
-        }
-
-        btnHard.setOnClickListener {
-            val resultIntent = Intent().apply {
-                putExtra("DIFICULTAD", Difficulty.HARD.name)
-                putExtra("DURACION_JUEGO", intent.getStringExtra("DURACION_ACTUAL") ?: "600000")
-            }
-            setResult(RESULT_OK, resultIntent)
-            finish()
-        }
-
-
-
+        // Cargar valores actuales desde intent(desde el MainActivity)
         durationEdit.setText(intent.getStringExtra("DURACION_ACTUAL") ?: "600000")
-        //difficultyEdit.setText(intent.getStringExtra("DIFICULTAD_ACTUAL") ?: "1")
-
-        findViewById<Button>(R.id.backToMainButton).setOnClickListener {
-            finish() // Volver sin guardar
+        editTextSizeBoard.setText(intent.getStringExtra("SIZE_BOARD_ACTUAL") ?: "4")
+        var dificultadStr: String = (intent.getStringExtra("DIFICULTAD_ACTUAL") ?: Difficulty.NORMAL.name)
+        dificultad = try {
+            Difficulty.valueOf(dificultadStr) // convierte "EASY"/"NORMAL"/"HARD" en enum
+        } catch (e: IllegalArgumentException) {
+            Difficulty.NORMAL
         }
 
-        findViewById<Button>(R.id.guadarButton).setOnClickListener { // Fix: guardarButton
-            val resultIntent = Intent().apply {
-                putExtra("DURACION_JUEGO", durationEdit.text.toString())
-               // putExtra("DIFICULTAD", difficultyEdit.text.toString())
-            }
+        // Botones dificultad
+        findViewById<Button>(R.id.easy).setOnClickListener {
+            dificultad = Difficulty.EASY
+            val resultIntent = Intent().apply { add_conf_to_intent(this) }
             setResult(RESULT_OK, resultIntent)
             finish()
         }
 
+        findViewById<Button>(R.id.normal).setOnClickListener {
+            dificultad = Difficulty.NORMAL
+            val resultIntent = Intent().apply { add_conf_to_intent(this) }
+            setResult(RESULT_OK, resultIntent)
+            finish()
+        }
+
+        findViewById<Button>(R.id.hard).setOnClickListener {
+            dificultad = Difficulty.HARD
+            val resultIntent = Intent().apply { add_conf_to_intent(this) }
+            setResult(RESULT_OK, resultIntent)
+            finish()
+        }
+
+        // Botón volver sin guardar
+        findViewById<Button>(R.id.backToMainButton).setOnClickListener {
+            finish()
+        }
+
+        // Botón guardar
+        findViewById<Button>(R.id.guadarButton).setOnClickListener {
+            val resultIntent = Intent().apply { add_conf_to_intent(this) }
+            setResult(RESULT_OK, resultIntent)
+            finish()
+        }
     }
 }

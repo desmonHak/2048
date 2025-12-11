@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity() {
     private var timer: CountDownTimer? = null
 
     private var difficulty: Float = 0.0F
+
+
+    private var victoria: Boolean = false
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -42,6 +45,8 @@ class MainActivity : AppCompatActivity() {
             result.data?.let { data ->
                 // Recibir datos de Settings
                 totalMillis = (data.getStringExtra("DURACION_JUEGO") ?: "600000").toLong()
+
+                gameView.boardSize = (data.getStringExtra("SIZE_BOARD_ACTUAL") ?: "600000").toInt()
 
                 val difStr = data.getStringExtra("DIFICULTAD") ?: Difficulty.NORMAL.name
                 val selectedDifficulty = try {
@@ -120,6 +125,7 @@ class MainActivity : AppCompatActivity() {
         resetButton = findViewById<Button>(R.id.resetButton)
         confButton = findViewById<Button>(R.id.confButton)
         gameView = findViewById(R.id.gameView)
+        gameView.boardSize = 4
         gameView.onScoreChange = { old, new ->
             scoreText.text = "Puntuación: ${new}"
         }
@@ -142,21 +148,28 @@ class MainActivity : AppCompatActivity() {
             handler.postDelayed({
                 gameView.resetGame()
             }, timeSleep) // despues de un segundo resetear el juego
+            victoria = false
         }
         gameView.onActionWin = { context ->
-            Toast.makeText(context, "¡Has ganado piruleta!, reseteando", Toast.LENGTH_LONG).show()
-            val handler = Handler(Looper.getMainLooper())
+            if (!victoria) {
+                Toast.makeText(context, "¡Has ganado piruleta!", Toast.LENGTH_LONG).show()
+                val handler = Handler(Looper.getMainLooper())
 
-            val newScore = Score(
-                points = gameView.score,
-                userName = "Gano: " + getDeviceName()
-            )
-            dbScore = DB_Score(this)
-            dbScore.addScore(newScore)
+                val newScore = Score(
+                    points = gameView.score,
+                    userName = "Gano: " + getDeviceName()
+                )
 
-            handler.postDelayed({
-                gameView.resetGame()
-            }, timeSleep) // despues de un segundo resetear el juego
+                // ahora las puntuaciones en victoria se guardan al reiniciar el juego
+                // asi el usuario puede seguir jugando
+                //dbScore = DB_Score(this)
+                //dbScore.addScore(newScore)
+
+                //handler.postDelayed({
+                //    gameView.resetGame()
+                //}, timeSleep) // despues de un segundo resetear el juego
+                victoria = true
+            }
         }
 
 
@@ -181,22 +194,30 @@ class MainActivity : AppCompatActivity() {
          * en la base de datos e indcamos que perdio
          */
         resetButton.setOnClickListener {
-            val newScore = Score(
-                points = gameView.score,
-                userName = "Perdio: " + getDeviceName()
-            )
+            var newScore = Score()
+            if (victoria) {
+                newScore.points = gameView.score
+                newScore.userName = "Gano: " + getDeviceName()
+            } else {
+                newScore.points = gameView.score
+                newScore.userName = "Perdio: " + getDeviceName()
+            }
 
             dbScore = DB_Score(this)
             dbScore.addScore(newScore)
             gameView.resetGame()
+
+            // resetear la variable victoria
+            victoria = false
         }
 
         confButton.setOnClickListener {
             val intent = Intent(this, SettingGameView::class.java).apply {
                 // Pasar valores actuales de GameView
                 putExtra("DURACION_ACTUAL", totalMillis.toString())
-                putExtra("DIFICULTAD_ACTUAL", gameView.dificultad.name/*difficulty.toString()*/)
+                putExtra("DIFICULTAD_ACTUAL", gameView.dificultad.name)
                 putExtra("TIMESLEEP_ACTUAL", timeSleep.toString())
+                putExtra("SIZE_BOARD_ACTUAL", gameView.boardSize.toString())
                 putExtra("PUNTUACION_ACTUAL", gameView.score) // Asumiendo que GameView tiene 'score'
             }
             settingsLauncher.launch(intent) // O startActivity(intent)

@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">2048</string>
+    <string name="dificultad">DIFICULTAD</string>
+    <string name="duracion_del_juego">duracion del juego</string>
+    <string name="dif_cil">Difícil</string>
+    <string name="normal">Normal</string>
+    <string name="f_cil">Fácil</string>
+    <string name="guardar">Guardar</string>
+    <string name="volver">Volver</string>
+    <string name="tama_o_del_tablero">tamaño del tablero</string>
 </resources>
