@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
                 // Recibir datos de Settings
                 totalMillis = (data.getStringExtra("DURACION_JUEGO") ?: "600000").toLong()
 
-                gameView.boardSize = (data.getStringExtra("SIZE_BOARD_ACTUAL") ?: "600000").toInt()
+                gameView.boardSize = (data.getStringExtra("SIZE_BOARD_ACTUAL") ?: "4").toInt()
 
                 val difStr = data.getStringExtra("DIFICULTAD") ?: Difficulty.NORMAL.name
                 val selectedDifficulty = try {
@@ -194,7 +194,7 @@ class MainActivity : AppCompatActivity() {
          * en la base de datos e indcamos que perdio
          */
         resetButton.setOnClickListener {
-            var newScore = Score()
+            val newScore = Score()
             if (victoria) {
                 newScore.points = gameView.score
                 newScore.userName = "Gano: " + getDeviceName()
@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
                 putExtra("DURACION_ACTUAL", totalMillis.toString())
                 putExtra("DIFICULTAD_ACTUAL", gameView.dificultad.name)
                 putExtra("TIMESLEEP_ACTUAL", timeSleep.toString())
-                putExtra("SIZE_BOARD_ACTUAL", gameView.boardSize.toString())
+                putExtra("SIZE_BOARD_ACTUAL", gameView.board.size.toString())
                 putExtra("PUNTUACION_ACTUAL", gameView.score) // Asumiendo que GameView tiene 'score'
             }
             settingsLauncher.launch(intent) // O startActivity(intent)
