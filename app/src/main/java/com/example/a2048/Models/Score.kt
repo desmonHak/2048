@@ -5,10 +5,12 @@ import java.util.Date
 import java.util.Locale
 
 data class Score(
-    val points: Int,
-    val date: Date = Date(),
-    val userName: String = ""
+    var points: Int,
+    var date: Date = Date(),
+    var userName: String = ""
 ) {
+    // Constructor vacío (por defecto)
+    constructor() : this(0, Date(), "")
 
     // Formato
     fun getFormattedDate(): String {
@@ -20,7 +22,6 @@ data class Score(
         return "Score(points=$points, date=${getFormattedDate()}, user=$userName)"
     }
 
-    // Metodo para crear Score vacío (por defecto)
     companion object {
         fun createDefault(userName: String = ""): Score {
             return Score(0, Date(), userName)
