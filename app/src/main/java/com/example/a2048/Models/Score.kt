@@ -22,6 +22,14 @@ data class Score(
         return "Score(points=$points, date=${getFormattedDate()}, user=$userName)"
     }
 
+    /**
+     * Patron factory method.
+     * companion object declara el bloque estático asociado a la clase Score.
+     * createDefault es una función de fábrica que crea una instancia de Score con:
+     *  - Puntuación inicial 0.
+     *  - Fecha actual (Date()).
+     *  - El userName (o cadena vacía por defecto).
+     */
     companion object {
         fun createDefault(userName: String = ""): Score {
             return Score(0, Date(), userName)

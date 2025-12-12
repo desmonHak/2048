@@ -8,6 +8,12 @@ import com.example.a2048.Models.Score
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ *  gestionar la base de datos de puntuaciones del juego 2048.
+ *
+ * Se encarga de crear y actualizar el esquema, así como de ofrecer
+ * operaciones CRUD sobre la tabla de puntuaciones.
+ */
 class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
@@ -21,6 +27,14 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val KEY_USER_NAME = "user_name"
     }
 
+    /**
+     * Crea la tabla de puntuaciones en la base de datos.
+     *
+     * Este metodo se ejecuta automáticamente cuando la base de datos
+     * se crea por primera vez.
+     *
+     * @param db instancia de [SQLiteDatabase] sobre la que se ejecuta el SQL de creación.
+     */
     override fun onCreate(db: SQLiteDatabase?) {
         val CREATE_SCORES_TABLE = """
             CREATE TABLE $TABLE_SCORES (
@@ -33,13 +47,25 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db?.execSQL(CREATE_SCORES_TABLE)
     }
 
+    /**
+     * Actualiza el esquema de la base de datos cuando cambia la versión.
+     *
+     * En este caso se elimina la tabla existente y se vuelve a crear.
+     *
+     * @param db instancia de [SQLiteDatabase] a actualizar.
+     * @param oldVersion versión anterior de la base de datos.
+     * @param newVersion nueva versión de la base de datos.
+     */
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_SCORES")
         onCreate(db)
     }
 
     /**
-     * CREATE - Insertar nuevo score
+     * Inserta una nueva puntuación en la base de datos.
+     *
+     * @param score objeto [Score] que contiene puntos, fecha y nombre de usuario.
+     * @return identificador autogenerado de la fila insertada, o -1 si falla.
      */
     fun addScore(score: Score): Long {
         val db = writableDatabase
@@ -54,7 +80,9 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     /**
-     * READ - Obtener todos los scores
+     * Obtiene todas las puntuaciones almacenadas ordenadas de mayor a menor puntuación.
+     *
+     * @return lista de objetos [Score] con todas las puntuaciones existentes.
      */
     fun getAllScores(): List<Score> {
         val scoreList = mutableListOf<Score>()
@@ -80,7 +108,10 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     /**
-     * READ - Obtener score por ID
+     * Obtiene una puntuación concreta a partir de su identificador.
+     *
+     * @param id identificador de la puntuación a recuperar.
+     * @return objeto [Score] si existe una fila con ese id, o `null` en caso contrario.
      */
     fun getScoreById(id: Int): Score? {
         val db = readableDatabase
@@ -106,7 +137,13 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     /**
-     * UPDATE - Actualizar score
+     * Actualiza los datos de una puntuación existente.
+     *
+     * Importante: el identificador usado en la cláusula `WHERE` debería ser el id de la fila,
+     * no los puntos (ahora mismo se usa `score.points`).
+     *
+     * @param score objeto [Score] con los nuevos valores a guardar.
+     * @return `true` si se ha actualizado al menos una fila, `false` en caso contrario.
      */
     fun updateScore(score: Score): Boolean {
         val db = writableDatabase
@@ -121,7 +158,10 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     /**
-     * DELETE - Eliminar score por ID
+     * Elimina una puntuación concreta por su identificador.
+     *
+     * @param id identificador de la puntuación a eliminar.
+     * @return `true` si se ha eliminado al menos una fila, `false` en caso contrario.
      */
     fun deleteScore(id: Int): Boolean {
         val db = writableDatabase
@@ -131,7 +171,9 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     /**
-     * DELETE - Eliminar todos los scores
+     * Elimina todas las puntuaciones de la tabla.
+     *
+     * @return número de filas eliminadas.
      */
     fun deleteAllScores(): Int {
         val db = writableDatabase
@@ -141,7 +183,9 @@ class DB_Score(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     }
 
     /**
-     * Obtener número total de scores
+     * Obtiene el número total de puntuaciones almacenadas.
+     *
+     * @return número de filas en la tabla de puntuaciones.
      */
     fun getScoresCount(): Int {
         val db = readableDatabase
