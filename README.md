@@ -2,7 +2,7 @@
 
 -----
 
-Juego del 2048 creado en equipo usando kotlin, sqlite y Jetpack Compose.
+Juego del 2048 creado en equipo usando kotlin, sqlite.
 
 ## Colaboradores
 
